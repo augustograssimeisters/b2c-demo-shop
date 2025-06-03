@@ -1,0 +1,429 @@
+openapi: 3.0.0
+info:
+  title: 'Spryker API'
+  contact:
+    name: Spryker
+    url: 'https://support.spryker.com/'
+    email: support@spryker.com
+  license:
+    name: MIT
+  version: 1.0.0
+servers:
+  -
+    url: 'https://glue-storefront.us.spryker.local'
+paths:
+  /token:
+    post:
+      tags:
+        - token
+      summary: 'Creates access token for customer.'
+      operationId: create-token
+      parameters:
+        -
+          $ref: '#/components/parameters/acceptLanguage'
+        -
+          $ref: '#/components/parameters/Page'
+        -
+          $ref: '#/components/parameters/Fields'
+        -
+          $ref: '#/components/parameters/Filter'
+      requestBody:
+        description: 'Expected request body.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiTokenRequestAttributes'
+        required: true
+      responses:
+        '201':
+          description: 'Expected response to a valid request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiTokenResponseAttributes'
+        '400':
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+        default:
+          description: 'Expected response to a bad request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+  '/stores/{storeId}':
+    get:
+      tags:
+        - stores
+      summary: 'Retrieves the store.'
+      operationId: get-stores
+      parameters:
+        -
+          name: storeId
+          in: path
+          description: 'Id of store.'
+          required: true
+          schema:
+            type: string
+        -
+          $ref: '#/components/parameters/ContentType'
+        -
+          $ref: '#/components/parameters/Page'
+        -
+          $ref: '#/components/parameters/Fields'
+        -
+          $ref: '#/components/parameters/Filter'
+        -
+          $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: 'Expected response to a valid request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoresRestAttributesResponse'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/StoresRestAttributesResponse'
+        '400':
+          description: 'Bad request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiErrorMessage'
+        '404':
+          description: 'Store not found.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiErrorMessage'
+        default:
+          description: 'Expected response to a bad request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiErrorMessage'
+  /stores:
+    get:
+      tags:
+        - stores
+      summary: 'Retrieves store collection.'
+      operationId: get-collection-of-stores
+      parameters:
+        -
+          $ref: '#/components/parameters/ContentType'
+        -
+          $ref: '#/components/parameters/Page'
+        -
+          $ref: '#/components/parameters/Fields'
+        -
+          $ref: '#/components/parameters/Filter'
+        -
+          $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: 'Expected response to a valid request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoresRestAttributesCollectionResponse'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/StoresRestAttributesCollectionResponse'
+        '400':
+          description: 'Bad request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiErrorMessage'
+        '404':
+          description: 'Not Found.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiErrorMessage'
+        default:
+          description: 'Expected response to a bad request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/JsonApiErrorMessage'
+components:
+  schemas:
+    ApiTokenRequest:
+      properties:
+        data:
+          $ref: '#/components/schemas/ApiTokenRequestData'
+    ApiTokenRequestAttributes:
+      required:
+        - grant_type
+        - username
+        - password
+      properties:
+        grant_type:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        scope:
+          type: string
+    ApiTokenRequestData:
+      properties:
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/ApiTokenRequestAttributes'
+    ApiTokenResponseAttributes:
+      properties:
+        token_type:
+          type: string
+        expires_in:
+          type: string
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+    ApiTokenResponseAttributesResponse:
+      properties:
+        data:
+          $ref: '#/components/schemas/ApiTokenResponseResponseData'
+        links:
+          $ref: '#/components/schemas/Links'
+    ApiTokenResponseResponseData:
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/ApiTokenResponseAttributes'
+        links:
+          $ref: '#/components/schemas/Links'
+    Links:
+      properties:
+        self:
+          type: string
+    Relationships:
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+    RelationshipsData:
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relationships'
+    RestErrorMessage:
+      properties:
+        code:
+          type: string
+        detail:
+          type: string
+        status:
+          type: integer
+    StoreCountryRestAttributes:
+      properties:
+        iso2Code:
+          type: string
+        iso3Code:
+          type: string
+        name:
+          type: string
+        postalCodeMandatory:
+          type: boolean
+        postalCodeRegex:
+          type: string
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreRegionRestAttributes'
+    StoreCurrencyRestAttributes:
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+    StoreLocaleRestAttributes:
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+    StoreRegionRestAttributes:
+      properties:
+        iso2Code:
+          type: string
+        name:
+          type: string
+    StoresRestAttributes:
+      properties:
+        timeZone:
+          type: string
+        defaultCurrency:
+          type: string
+        currencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreCurrencyRestAttributes'
+        locales:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreLocaleRestAttributes'
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreCountryRestAttributes'
+    StoresRestAttributesCollectionResponse:
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoresRestCollectionResponseData'
+    StoresRestAttributesResponse:
+      properties:
+        data:
+          $ref: '#/components/schemas/StoresRestResponseData'
+        links:
+          $ref: '#/components/schemas/Links'
+    StoresRestCollectionResponseData:
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/StoresRestAttributes'
+        links:
+          $ref: '#/components/schemas/Links'
+    StoresRestResponseData:
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/StoresRestAttributes'
+        links:
+          $ref: '#/components/schemas/Links'
+    JsonApiErrorMessage:
+      type: object
+      properties:
+        errors:
+          type: object
+          properties:
+            status:
+              type: integer
+            code:
+              type: string
+            message:
+              type: string
+  parameters:
+    acceptLanguage:
+      name: Accept-Language
+      in: header
+      description: 'Locale value relevant for the store.'
+      required: false
+      schema:
+        type: string
+    ContentType:
+      name: Content-Type
+      in: header
+      description: 'Content-Type header is required for POST and PATCH requests.'
+      required: true
+      schema:
+        type: string
+        example: application/vnd.api+json
+    Page:
+      name: page
+      in: query
+      description: 'Parameter is used to limit requested items.'
+      required: false
+      style: deepObject
+      explode: true
+      schema:
+        type: object
+        properties:
+          offset:
+            type: integer
+            description: 'The number of items to skip before starting to collect the result set.'
+          limit:
+            type: integer
+            description: 'The numbers of items to return.'
+        example:
+          offset: 1
+          limit: 10
+    Fields:
+      name: fields
+      in: query
+      description: 'Parameter is used to extract specified items\` fields.'
+      required: false
+      style: deepObject
+      explode: true
+      schema:
+        type: object
+        properties:
+          resourceName:
+            type: array
+            items:
+              type: string
+            description: 'The name of resource.'
+        example:
+          people: 'name,last-name'
+    Filter:
+      name: filter
+      in: query
+      description: 'Parameter is used to sort items by specified values.'
+      required: false
+      style: deepObject
+      explode: true
+      schema:
+        type: object
+        properties:
+          resource.propertyName:
+            description: test
+        example:
+          wishlists.name: Test
+          wishlists.quantity: 1
+          wishlists.uuid: '{"in": ["Test1","Test2"]}'
+    Sort:
+      name: sort
+      in: query
+      description: 'Parameter is used to sort items. Use dash `-` for DESC direction.'
+      required: false
+      style: form
+      explode: false
+      schema:
+        type: string
+        example: '-field'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+tags:
+  -
+    name: stores
+  -
+    name: token

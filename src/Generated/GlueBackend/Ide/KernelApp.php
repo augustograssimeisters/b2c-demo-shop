@@ -1,0 +1,10 @@
+<?php
+
+namespace Generated\GlueBackend\Ide;
+
+/**
+ * @method \Spryker\Client\KernelApp\KernelAppClientInterface client()
+ * @method \Spryker\Zed\KernelApp\Business\KernelAppFacadeInterface facade()
+ */
+interface KernelApp
+{}
