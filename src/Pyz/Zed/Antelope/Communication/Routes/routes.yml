@@ -1,0 +1,14 @@
+antelope_location_add:
+  path: /antelope/location/add
+  defaults:
+    _controller: 'Pyz\Zed\Antelope\Communication\Controller\AntelopeLocationController::addAction'
+
+antelope_location_list:
+  path: /antelope/location/list
+  defaults:
+    _controller: 'Pyz\Zed\Antelope\Communication\Controller\AntelopeLocationController::listAction'
+
+antelope_gateway_get_location:
+  path: /antelope/gateway/location/get
+  defaults:
+    _controller: 'Pyz\Zed\Antelope\Communication\Controller\GatewayController::getAntelopeLocationAction'
