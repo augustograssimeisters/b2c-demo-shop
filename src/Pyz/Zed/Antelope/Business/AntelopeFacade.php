@@ -36,7 +36,7 @@ class AntelopeFacade extends AbstractFacade implements AntelopeFacadeInterface
     }
 
     /**
-     * Exemplo de método para buscar um Antelope com localização (se já existir na sua implementação)
+     *
      *
      * @param int $idAntelope
      * @return \Generated\Shared\Transfer\AntelopeTransfer|null
