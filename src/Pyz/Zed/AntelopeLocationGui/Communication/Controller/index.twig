@@ -1,0 +1,18 @@
+{% extends '@ZedGui/layout.twig' %}
+
+{% block content %}
+    <h1>Manage Antelope Locations</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            {{ antelopeLocationTable|raw }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_start(antelopeLocationCreateForm) }}
+                {{ form_row(antelopeLocationCreateForm.name) }}
+                <button type="submit" class="btn btn-primary">Create Location</button>
+            {{ form_end(antelopeLocationCreateForm) }}
+        </div>
+    </div>
+{% endblock %}
