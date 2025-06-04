@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<transfers xmlns="spryker:transfer-01">
+
+    <transfer name="AntelopeLocation">
+        <property name="idLocation" type="int"/>
+        <property name="locationName" type="string"/>
+    </transfer>
+
+    <transfer name="Antelope">
+        <property name="idAntelope" type="int"/>
+        <property name="name" type="string"/>
+        <property name="fkLocation" type="int"/>
+        <property name="location" type="AntelopeLocation" nullable="true"/>
+    </transfer>
+
+</transfers>
