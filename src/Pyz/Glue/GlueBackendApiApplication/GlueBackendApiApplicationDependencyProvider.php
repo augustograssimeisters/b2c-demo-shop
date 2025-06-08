@@ -37,6 +37,7 @@ use Spryker\Glue\WarehouseOauthBackendApi\Plugin\GlueBackendApiApplication\Wareh
 use Spryker\Glue\WarehouseOauthBackendApi\Plugin\GlueBackendApiApplication\WarehouseTokensBackendResourcePlugin;
 use Spryker\Glue\WarehouseUsersBackendApi\Plugin\GlueBackendApiApplication\WarehouseUserAssignmentsBackendResourcePlugin;
 use Spryker\Zed\Propel\Communication\Plugin\Application\PropelApplicationPlugin;
+use Pyz\Glue\AntelopeLocationBackendApi\Plugin\Resource\AntelopeLocationResourcePlugin;
 
 class GlueBackendApiApplicationDependencyProvider extends SprykerGlueBackendApiApplicationDependencyProvider
 {
@@ -135,5 +136,13 @@ class GlueBackendApiApplicationDependencyProvider extends SprykerGlueBackendApiA
         return [
             new DynamicEntityRouteProviderPlugin(),
         ];
+    }
+
+    public function getResourcePlugins(): array
+    {
+        return array_merge(parent::getResourcePlugins(), [
+            new AntelopeLocationResourcePlugin(),
+            // outros plugins ...
+        ]);
     }
 }
