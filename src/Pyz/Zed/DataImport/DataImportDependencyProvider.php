@@ -55,6 +55,8 @@ use Spryker\Zed\StockDataImport\Communication\Plugin\StockDataImportPlugin;
 use Spryker\Zed\StockDataImport\Communication\Plugin\StockStoreDataImportPlugin;
 use Spryker\Zed\StoreContextDataImport\Communication\Plugin\DataImport\StoreContextDataImportPlugin;
 use Spryker\Zed\StoreDataImport\Communication\Plugin\DataImport\StoreDataImportPlugin;
+use Pyz\Zed\AntelopeLocationDataImport\Communication\Plugin\DataImport\AntelopeLocationDataImportPlugin;
+use Pyz\Zed\AntelopeDataImport\Communication\Plugin\DataImport\AntelopeDataImportPlugin;
 
 class DataImportDependencyProvider extends SprykerDataImportDependencyProvider
 {
@@ -107,6 +109,9 @@ class DataImportDependencyProvider extends SprykerDataImportDependencyProvider
      * @param \Spryker\Zed\Kernel\Container $container
      *
      * @return \Spryker\Zed\Kernel\Container
+     */
+        /**
+     * @return \Spryker\Zed\DataImport\Dependency\Plugin\DataImportPluginInterface[]
      */
     public function provideBusinessLayerDependencies(Container $container): Container
     {
@@ -301,6 +306,8 @@ class DataImportDependencyProvider extends SprykerDataImportDependencyProvider
             new StockAddressDataImportPlugin(),
             new CategoryStoreDataImportPlugin(),
             new ProductConfigurationDataImportPlugin(),
+            new AntelopeDataImportPlugin(),
+            new AntelopeLocationDataImportPlugin(),
         ];
     }
 
@@ -322,6 +329,12 @@ class DataImportDependencyProvider extends SprykerDataImportDependencyProvider
         return [
             new DataImportEventBehaviorPlugin(),
             new DataImportPublisherPlugin(),
+        ];
+    }
+    protected function getDataImportPlugins(): array
+    {
+        return [
+            new AntelopeLocationDataImportPlugin(),
         ];
     }
 }

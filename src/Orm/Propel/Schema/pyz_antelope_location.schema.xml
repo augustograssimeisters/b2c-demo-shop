@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://static.spryker.com/schema-01.xsd"
+        name="zed"
+        namespace="Orm\Zed\AntelopeLocation\Persistence"
+        package="src.Orm.Zed.AntelopeLocation.Persistence">
+
+    <table name="pyz_antelope_location" idMethod="native" phpName="PyzAntelopeLocation">
+        <column name="id_antelope_location" type="INTEGER" primaryKey="true" autoIncrement="true"/>
+        <column name="name" type="VARCHAR" size="255" required="true"/>
+        <column name="latitude" type="FLOAT" required="true"/>
+        <column name="longitude" type="FLOAT" required="true"/>
+        <column name="created_at" type="TIMESTAMP"/>
+        <column name="updated_at" type="TIMESTAMP"/>
+    </table>
+
+</database>
