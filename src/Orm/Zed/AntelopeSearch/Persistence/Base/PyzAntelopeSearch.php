@@ -1,11 +1,12 @@
 <?php
 
-namespace Orm\Zed\Antelope\Persistence\Base;
+namespace Orm\Zed\AntelopeSearch\Persistence\Base;
 
+use \DateTime;
 use \Exception;
 use \PDO;
-use Orm\Zed\Antelope\Persistence\PyzAntelopeQuery as ChildPyzAntelopeQuery;
-use Orm\Zed\Antelope\Persistence\Map\PyzAntelopeTableMap;
+use Orm\Zed\AntelopeSearch\Persistence\PyzAntelopeSearchQuery as ChildPyzAntelopeSearchQuery;
+use Orm\Zed\AntelopeSearch\Persistence\Map\PyzAntelopeSearchTableMap;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
@@ -17,23 +18,24 @@ use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Parser\AbstractParser;
+use Propel\Runtime\Util\PropelDateTime;
 use Spryker\Zed\PropelReplicationCache\Business\PropelReplicationCacheFacade;
 
 /**
- * Base class that represents a row from the 'pyz_antelope' table.
+ * Base class that represents a row from the 'pyz_antelope_search' table.
  *
  *
  *
- * @package    propel.generator.src.Orm.Zed.Antelope.Persistence.Base
+ * @package    propel.generator.src.Orm.Zed.AntelopeSearch.Persistence.Base
  */
-abstract class PyzAntelope implements ActiveRecordInterface
+abstract class PyzAntelopeSearch implements ActiveRecordInterface
 {
     /**
      * TableMap class name
      *
      * @var string
      */
-    public const TABLE_MAP = '\\Orm\\Zed\\Antelope\\Persistence\\Map\\PyzAntelopeTableMap';
+    public const TABLE_MAP = '\\Orm\\Zed\\AntelopeSearch\\Persistence\\Map\\PyzAntelopeSearchTableMap';
 
 
     /**
@@ -63,25 +65,53 @@ abstract class PyzAntelope implements ActiveRecordInterface
     protected $virtualColumns = [];
 
     /**
-     * The value for the id_antelope field.
+     * The value for the id_antelope_search field.
+     *
+     * @var        string
+     */
+    protected $id_antelope_search;
+
+    /**
+     * The value for the fk_antelope field.
      *
      * @var        int
      */
-    protected $id_antelope;
+    protected $fk_antelope;
 
     /**
-     * The value for the name field.
+     * The value for the data field.
      *
-     * @var        string
+     * @var        string|null
      */
-    protected $name;
+    protected $data;
 
     /**
-     * The value for the color field.
+     * The value for the alias_keys field.
      *
-     * @var        string
+     * @var        string|null
      */
-    protected $color;
+    protected $alias_keys;
+
+    /**
+     * The value for the key field.
+     *
+     * @var        string|null
+     */
+    protected $key;
+
+    /**
+     * The value for the created_at field.
+     *
+     * @var        DateTime|null
+     */
+    protected $created_at;
+
+    /**
+     * The value for the updated_at field.
+     *
+     * @var        DateTime|null
+     */
+    protected $updated_at;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -91,41 +121,27 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     protected $alreadyInSave = false;
 
-    // event behavior
+    // synchronization behavior
 
     /**
-     * @var string
+     * @var array
      */
-    private $_eventName;
+    private $_dataTemp;
 
     /**
+     * @deprecated Use {@link \Spryker\Zed\SynchronizationBehavior\SynchronizationBehaviorConfig::isSynchronizationEnabled()} instead.
+     *
      * @var bool
      */
-    private $_isModified;
+    private $_isSendingToQueue = true;
 
     /**
-     * @var array
+     * @var \Spryker\Zed\Kernel\Locator
      */
-    private $_modifiedColumns;
+    private $_locator;
 
     /**
-     * @var array
-     */
-    private $_initialValues;
-
-    /**
-     * @var bool
-     */
-    private $_isEventDisabled;
-
-    /**
-     * @var array
-     */
-    private $_foreignKeys = [
-    ];
-
-    /**
-     * Initializes internal state of Orm\Zed\Antelope\Persistence\Base\PyzAntelope object.
+     * Initializes internal state of Orm\Zed\AntelopeSearch\Persistence\Base\PyzAntelopeSearch object.
      */
     public function __construct()
     {
@@ -218,9 +234,9 @@ abstract class PyzAntelope implements ActiveRecordInterface
     }
 
     /**
-     * Compares this with another <code>PyzAntelope</code> instance.  If
-     * <code>obj</code> is an instance of <code>PyzAntelope</code>, delegates to
-     * <code>equals(PyzAntelope)</code>.  Otherwise, returns <code>false</code>.
+     * Compares this with another <code>PyzAntelopeSearch</code> instance.  If
+     * <code>obj</code> is an instance of <code>PyzAntelopeSearch</code>, delegates to
+     * <code>equals(PyzAntelopeSearch)</code>.  Otherwise, returns <code>false</code>.
      *
      * @param mixed $obj The object to compare to.
      * @return bool Whether equal to the object specified.
@@ -351,42 +367,131 @@ abstract class PyzAntelope implements ActiveRecordInterface
     }
 
     /**
-     * Get the [id_antelope] column value.
+     * Get the [id_antelope_search] column value.
+     *
+     * @return string
+     */
+    public function getIdAntelopeSearch()
+    {
+        return $this->id_antelope_search;
+    }
+
+    /**
+     * Get the [fk_antelope] column value.
      *
      * @return int
      */
-    public function getIdAntelope()
+    public function getFkAntelope()
     {
-        return $this->id_antelope;
+        return $this->fk_antelope;
     }
-
     /**
-     * Get the [name] column value.
+     * Get the [data] column value.
      *
-     * @return string
+     * @return array
      */
-    public function getName()
+    public function getData()
     {
-        return $this->name;
+        return json_decode($this->data, true);
     }
 
     /**
-     * Get the [color] column value.
+     * Get the [alias_keys] column value.
      *
-     * @return string
+     * @return string|null
      */
-    public function getColor()
+    public function getAliasKeys()
     {
-        return $this->color;
+        return $this->alias_keys;
     }
 
     /**
-     * Set the value of [id_antelope] column.
+     * Get the [key] column value.
+     *
+     * @return string|null
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
+     * Get the [optionally formatted] temporal [created_at] column value.
+     *
+     *
+     * @param string|null $format The date/time format string (either date()-style or strftime()-style).
+     *   If format is NULL, then the raw DateTime object will be returned.
+     *
+     * @return string|DateTime|null Formatted date/time value as string or DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00.
+     *
+     * @throws \Propel\Runtime\Exception\PropelException - if unable to parse/validate the date/time value.
+     *
+     * @psalm-return ($format is null ? DateTime|null : string|null)
+     */
+    public function getCreatedAt($format = null)
+    {
+        if ($format === null) {
+            return $this->created_at;
+        } else {
+            return $this->created_at instanceof \DateTimeInterface ? $this->created_at->format($format) : null;
+        }
+    }
+
+    /**
+     * Get the [optionally formatted] temporal [updated_at] column value.
+     *
+     *
+     * @param string|null $format The date/time format string (either date()-style or strftime()-style).
+     *   If format is NULL, then the raw DateTime object will be returned.
+     *
+     * @return string|DateTime|null Formatted date/time value as string or DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00.
+     *
+     * @throws \Propel\Runtime\Exception\PropelException - if unable to parse/validate the date/time value.
+     *
+     * @psalm-return ($format is null ? DateTime|null : string|null)
+     */
+    public function getUpdatedAt($format = null)
+    {
+        if ($format === null) {
+            return $this->updated_at;
+        } else {
+            return $this->updated_at instanceof \DateTimeInterface ? $this->updated_at->format($format) : null;
+        }
+    }
+
+    /**
+     * Set the value of [id_antelope_search] column.
+     *
+     * @param string $v New value
+     * @return $this The current object (for fluent API support)
+     */
+    public function setIdAntelopeSearch($v)
+    {
+        if ($v !== null) {
+            $v = (string) $v;
+        }
+
+        // When this is true we will not check for value equality as we need to be able to set a value for this field
+        // to its initial value and have the column marked as modified. This is relevant for update cases when
+        // we create an instance of an entity manually.
+        // @see \Spryker\Zed\Kernel\Persistence\EntityManager\TransferToEntityMapper::mapEntity()
+        $hasDefaultValue = false;
+
+        if (($this->isNew() && $hasDefaultValue) || $this->id_antelope_search !== $v) {
+            $this->id_antelope_search = $v;
+            $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_ID_ANTELOPE_SEARCH] = true;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the value of [fk_antelope] column.
      *
      * @param int $v New value
      * @return $this The current object (for fluent API support)
      */
-    public function setIdAntelope($v)
+    public function setFkAntelope($v)
     {
         if ($v !== null) {
             $v = (int) $v;
@@ -398,21 +503,46 @@ abstract class PyzAntelope implements ActiveRecordInterface
         // @see \Spryker\Zed\Kernel\Persistence\EntityManager\TransferToEntityMapper::mapEntity()
         $hasDefaultValue = false;
 
-        if (($this->isNew() && $hasDefaultValue) || $this->id_antelope !== $v) {
-            $this->id_antelope = $v;
-            $this->modifiedColumns[PyzAntelopeTableMap::COL_ID_ANTELOPE] = true;
+        if (($this->isNew() && $hasDefaultValue) || $this->fk_antelope !== $v) {
+            $this->fk_antelope = $v;
+            $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_FK_ANTELOPE] = true;
+        }
+
+        return $this;
+    }
+    /**
+     * Set the value of [data] column.
+     *
+     * @param array $v new value
+     * @return $this The current object (for fluent API support)
+     */
+    public function setData($v)
+    {
+        if (is_array($v)) {
+            $this->_dataTemp = $v;
+            $v = json_encode($v);
+        }
+
+        if ($v !== null) {
+            $v = (string) $v;
+        }
+
+        if ($this->data !== $v) {
+            $this->data = $v;
+            $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_DATA] = true;
         }
 
         return $this;
     }
 
+
     /**
-     * Set the value of [name] column.
+     * Set the value of [alias_keys] column.
      *
-     * @param string $v New value
+     * @param string|null $v New value
      * @return $this The current object (for fluent API support)
      */
-    public function setName($v)
+    public function setAliasKeys($v)
     {
         if ($v !== null) {
             $v = (string) $v;
@@ -424,21 +554,21 @@ abstract class PyzAntelope implements ActiveRecordInterface
         // @see \Spryker\Zed\Kernel\Persistence\EntityManager\TransferToEntityMapper::mapEntity()
         $hasDefaultValue = false;
 
-        if (($this->isNew() && $hasDefaultValue) || $this->name !== $v) {
-            $this->name = $v;
-            $this->modifiedColumns[PyzAntelopeTableMap::COL_NAME] = true;
+        if (($this->isNew() && $hasDefaultValue) || $this->alias_keys !== $v) {
+            $this->alias_keys = $v;
+            $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_ALIAS_KEYS] = true;
         }
 
         return $this;
     }
 
     /**
-     * Set the value of [color] column.
+     * Set the value of [key] column.
      *
-     * @param string $v New value
+     * @param string|null $v New value
      * @return $this The current object (for fluent API support)
      */
-    public function setColor($v)
+    public function setKey($v)
     {
         if ($v !== null) {
             $v = (string) $v;
@@ -450,10 +580,50 @@ abstract class PyzAntelope implements ActiveRecordInterface
         // @see \Spryker\Zed\Kernel\Persistence\EntityManager\TransferToEntityMapper::mapEntity()
         $hasDefaultValue = false;
 
-        if (($this->isNew() && $hasDefaultValue) || $this->color !== $v) {
-            $this->color = $v;
-            $this->modifiedColumns[PyzAntelopeTableMap::COL_COLOR] = true;
+        if (($this->isNew() && $hasDefaultValue) || $this->key !== $v) {
+            $this->key = $v;
+            $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_KEY] = true;
         }
+
+        return $this;
+    }
+
+    /**
+     * Sets the value of [created_at] column to a normalized version of the date/time value specified.
+     *
+     * @param string|integer|\DateTimeInterface|null $v string, integer (timestamp), or \DateTimeInterface value.
+     *               Empty strings are treated as NULL.
+     * @return $this The current object (for fluent API support)
+     */
+    public function setCreatedAt($v)
+    {
+        $dt = PropelDateTime::newInstance($v, null, 'DateTime');
+        if ($this->created_at !== null || $dt !== null) {
+            if ($this->created_at === null || $dt === null || $dt->format("Y-m-d H:i:s.u") !== $this->created_at->format("Y-m-d H:i:s.u")) {
+                $this->created_at = $dt === null ? null : clone $dt;
+                $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_CREATED_AT] = true;
+            }
+        } // if either are not null
+
+        return $this;
+    }
+
+    /**
+     * Sets the value of [updated_at] column to a normalized version of the date/time value specified.
+     *
+     * @param string|integer|\DateTimeInterface|null $v string, integer (timestamp), or \DateTimeInterface value.
+     *               Empty strings are treated as NULL.
+     * @return $this The current object (for fluent API support)
+     */
+    public function setUpdatedAt($v)
+    {
+        $dt = PropelDateTime::newInstance($v, null, 'DateTime');
+        if ($this->updated_at !== null || $dt !== null) {
+            if ($this->updated_at === null || $dt === null || $dt->format("Y-m-d H:i:s.u") !== $this->updated_at->format("Y-m-d H:i:s.u")) {
+                $this->updated_at = $dt === null ? null : clone $dt;
+                $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_UPDATED_AT] = true;
+            }
+        } // if either are not null
 
         return $this;
     }
@@ -494,14 +664,32 @@ abstract class PyzAntelope implements ActiveRecordInterface
     {
         try {
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : PyzAntelopeTableMap::translateFieldName('IdAntelope', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->id_antelope = (null !== $col) ? (int) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : PyzAntelopeSearchTableMap::translateFieldName('IdAntelopeSearch', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->id_antelope_search = (null !== $col) ? (string) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : PyzAntelopeTableMap::translateFieldName('Name', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->name = (null !== $col) ? (string) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : PyzAntelopeSearchTableMap::translateFieldName('FkAntelope', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->fk_antelope = (null !== $col) ? (int) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : PyzAntelopeTableMap::translateFieldName('Color', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->color = (null !== $col) ? (string) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : PyzAntelopeSearchTableMap::translateFieldName('Data', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->data = (null !== $col) ? (string) $col : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : PyzAntelopeSearchTableMap::translateFieldName('AliasKeys', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->alias_keys = (null !== $col) ? (string) $col : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 4 + $startcol : PyzAntelopeSearchTableMap::translateFieldName('Key', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->key = (null !== $col) ? (string) $col : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 5 + $startcol : PyzAntelopeSearchTableMap::translateFieldName('CreatedAt', TableMap::TYPE_PHPNAME, $indexType)];
+            if ($col === '0000-00-00 00:00:00') {
+                $col = null;
+            }
+            $this->created_at = (null !== $col) ? PropelDateTime::newInstance($col, null, 'DateTime') : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 6 + $startcol : PyzAntelopeSearchTableMap::translateFieldName('UpdatedAt', TableMap::TYPE_PHPNAME, $indexType)];
+            if ($col === '0000-00-00 00:00:00') {
+                $col = null;
+            }
+            $this->updated_at = (null !== $col) ? PropelDateTime::newInstance($col, null, 'DateTime') : null;
 
             $this->resetModified();
             $this->setNew(false);
@@ -510,10 +698,10 @@ abstract class PyzAntelope implements ActiveRecordInterface
                 $this->ensureConsistency();
             }
 
-            return $startcol + 3; // 3 = PyzAntelopeTableMap::NUM_HYDRATE_COLUMNS.
+            return $startcol + 7; // 7 = PyzAntelopeSearchTableMap::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
-            throw new PropelException(sprintf('Error populating %s object', '\\Orm\\Zed\\Antelope\\Persistence\\PyzAntelope'), 0, $e);
+            throw new PropelException(sprintf('Error populating %s object', '\\Orm\\Zed\\AntelopeSearch\\Persistence\\PyzAntelopeSearch'), 0, $e);
         }
     }
 
@@ -556,13 +744,13 @@ abstract class PyzAntelope implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getReadConnection(PyzAntelopeTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getReadConnection(PyzAntelopeSearchTableMap::DATABASE_NAME);
         }
 
         // We don't need to alter the object instance pool; we're just modifying this instance
         // already in the pool.
 
-        $dataFetcher = ChildPyzAntelopeQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
+        $dataFetcher = ChildPyzAntelopeSearchQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
         $row = $dataFetcher->fetch();
         $dataFetcher->close();
         if (!$row) {
@@ -581,8 +769,8 @@ abstract class PyzAntelope implements ActiveRecordInterface
      * @param ConnectionInterface $con
      * @return void
      * @throws \Propel\Runtime\Exception\PropelException
-     * @see PyzAntelope::setDeleted()
-     * @see PyzAntelope::isDeleted()
+     * @see PyzAntelopeSearch::setDeleted()
+     * @see PyzAntelopeSearch::isDeleted()
      */
     public function delete(?ConnectionInterface $con = null): void
     {
@@ -591,19 +779,21 @@ abstract class PyzAntelope implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(PyzAntelopeTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(PyzAntelopeSearchTableMap::DATABASE_NAME);
         }
 
         $con->transaction(function () use ($con) {
-            $deleteQuery = ChildPyzAntelopeQuery::create()
+            $deleteQuery = ChildPyzAntelopeSearchQuery::create()
                 ->filterByPrimaryKey($this->getPrimaryKey());
             $ret = $this->preDelete($con);
             if ($ret) {
                 $deleteQuery->delete($con);
                 $this->postDelete($con);
-                // event behavior
+                // synchronization behavior
 
-                $this->addDeleteEventToMemory();
+                $this->syncUnpublishedMessage();
+                $this->syncUnpublishedMessageForMappingResource();
+                $this->syncUnpublishedMessageForMappings();
 
                 $this->setDeleted(true);
             }
@@ -634,20 +824,35 @@ abstract class PyzAntelope implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(PyzAntelopeTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(PyzAntelopeSearchTableMap::DATABASE_NAME);
         }
 
         return $con->transaction(function () use ($con) {
             $ret = $this->preSave($con);
             $isInsert = $this->isNew();
-            // event behavior
+            // synchronization behavior
 
-            $this->prepareSaveEventName();
+            $this->setGeneratedKey();
+            $this->setGeneratedKeyForMappingResource();
+            $this->setGeneratedAliasKeys();
 
             if ($isInsert) {
                 $ret = $ret && $this->preInsert($con);
+                // timestampable behavior
+                $time = time();
+                $highPrecision = \Propel\Runtime\Util\PropelDateTime::createHighPrecision();
+                if (!$this->isColumnModified(PyzAntelopeSearchTableMap::COL_CREATED_AT)) {
+                    $this->setCreatedAt($highPrecision);
+                }
+                if (!$this->isColumnModified(PyzAntelopeSearchTableMap::COL_UPDATED_AT)) {
+                    $this->setUpdatedAt($highPrecision);
+                }
             } else {
                 $ret = $ret && $this->preUpdate($con);
+                // timestampable behavior
+                if ($this->isModified() && !$this->isColumnModified(PyzAntelopeSearchTableMap::COL_UPDATED_AT)) {
+                    $this->setUpdatedAt(\Propel\Runtime\Util\PropelDateTime::createHighPrecision());
+                }
             }
             if ($ret) {
                 $affectedRows = $this->doSave($con);
@@ -657,13 +862,13 @@ abstract class PyzAntelope implements ActiveRecordInterface
                     $this->postUpdate($con);
                 }
                 $this->postSave($con);
-                // event behavior
+                // synchronization behavior
 
-                if ($affectedRows) {
-                    $this->addSaveEventToMemory();
-                }
+                $this->syncPublishedMessage();
+                $this->syncPublishedMessageForMappingResource();
+                $this->syncPublishedMessageForMappings();
 
-                PyzAntelopeTableMap::addInstanceToPool($this);
+                PyzAntelopeSearchTableMap::addInstanceToPool($this);
             } else {
                 $affectedRows = 0;
             }
@@ -759,21 +964,33 @@ abstract class PyzAntelope implements ActiveRecordInterface
         $modifiedColumns = [];
         $index = 0;
 
-        $this->modifiedColumns[PyzAntelopeTableMap::COL_ID_ANTELOPE] = true;
+        $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_ID_ANTELOPE_SEARCH] = true;
 
          // check the columns in natural order for more readable SQL queries
-        if ($this->isColumnModified(PyzAntelopeTableMap::COL_ID_ANTELOPE)) {
-            $modifiedColumns[':p' . $index++]  = 'id_antelope';
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_ID_ANTELOPE_SEARCH)) {
+            $modifiedColumns[':p' . $index++]  = '`id_antelope_search`';
         }
-        if ($this->isColumnModified(PyzAntelopeTableMap::COL_NAME)) {
-            $modifiedColumns[':p' . $index++]  = 'name';
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_FK_ANTELOPE)) {
+            $modifiedColumns[':p' . $index++]  = '`fk_antelope`';
         }
-        if ($this->isColumnModified(PyzAntelopeTableMap::COL_COLOR)) {
-            $modifiedColumns[':p' . $index++]  = 'color';
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_DATA)) {
+            $modifiedColumns[':p' . $index++]  = '`data`';
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_ALIAS_KEYS)) {
+            $modifiedColumns[':p' . $index++]  = '`alias_keys`';
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_KEY)) {
+            $modifiedColumns[':p' . $index++]  = '`key`';
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_CREATED_AT)) {
+            $modifiedColumns[':p' . $index++]  = '`created_at`';
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_UPDATED_AT)) {
+            $modifiedColumns[':p' . $index++]  = '`updated_at`';
         }
 
         $sql = sprintf(
-            'INSERT INTO pyz_antelope (%s) VALUES (%s)',
+            'INSERT INTO `pyz_antelope_search` (%s) VALUES (%s)',
             implode(', ', $modifiedColumns),
             implode(', ', array_keys($modifiedColumns))
         );
@@ -782,16 +999,32 @@ abstract class PyzAntelope implements ActiveRecordInterface
             $stmt = $con->prepare($sql);
             foreach ($modifiedColumns as $identifier => $columnName) {
                 switch ($columnName) {
-                    case 'id_antelope':
-                        $stmt->bindValue($identifier, $this->id_antelope, PDO::PARAM_INT);
+                    case '`id_antelope_search`':
+                        $stmt->bindValue($identifier, $this->id_antelope_search, PDO::PARAM_INT);
 
                         break;
-                    case 'name':
-                        $stmt->bindValue($identifier, $this->name, PDO::PARAM_STR);
+                    case '`fk_antelope`':
+                        $stmt->bindValue($identifier, $this->fk_antelope, PDO::PARAM_INT);
 
                         break;
-                    case 'color':
-                        $stmt->bindValue($identifier, $this->color, PDO::PARAM_STR);
+                    case '`data`':
+                        $stmt->bindValue($identifier, $this->data, PDO::PARAM_STR);
+
+                        break;
+                    case '`alias_keys`':
+                        $stmt->bindValue($identifier, $this->alias_keys, PDO::PARAM_STR);
+
+                        break;
+                    case '`key`':
+                        $stmt->bindValue($identifier, $this->key, PDO::PARAM_STR);
+
+                        break;
+                    case '`created_at`':
+                        $stmt->bindValue($identifier, $this->created_at ? $this->created_at->format("Y-m-d H:i:s.u") : null, PDO::PARAM_STR);
+
+                        break;
+                    case '`updated_at`':
+                        $stmt->bindValue($identifier, $this->updated_at ? $this->updated_at->format("Y-m-d H:i:s.u") : null, PDO::PARAM_STR);
 
                         break;
                 }
@@ -803,12 +1036,12 @@ abstract class PyzAntelope implements ActiveRecordInterface
         }
 
         try {
-            $pk = $con->lastInsertId('pyz_antelope_pk_seq');
+            $pk = $con->lastInsertId('pyz_antelope_search_pk_seq');
         } catch (Exception $e) {
             throw new PropelException('Unable to get autoincrement id.', 0, $e);
         }
         if ($pk !== null) {
-            $this->setIdAntelope($pk);
+            $this->setIdAntelopeSearch($pk);
         }
 
         $this->setNew(false);
@@ -842,7 +1075,7 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function getByName(string $name, string $type = TableMap::TYPE_FIELDNAME)
     {
-        $pos = PyzAntelopeTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = PyzAntelopeSearchTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
         $field = $this->getByPosition($pos);
 
         return $field;
@@ -859,13 +1092,25 @@ abstract class PyzAntelope implements ActiveRecordInterface
     {
         switch ($pos) {
             case 0:
-                return $this->getIdAntelope();
+                return $this->getIdAntelopeSearch();
 
             case 1:
-                return $this->getName();
+                return $this->getFkAntelope();
 
             case 2:
-                return $this->getColor();
+                return $this->getData();
+
+            case 3:
+                return $this->getAliasKeys();
+
+            case 4:
+                return $this->getKey();
+
+            case 5:
+                return $this->getCreatedAt();
+
+            case 6:
+                return $this->getUpdatedAt();
 
             default:
                 return null;
@@ -888,16 +1133,28 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function toArray(string $keyType = TableMap::TYPE_FIELDNAME, bool $includeLazyLoadColumns = true, array $alreadyDumpedObjects = []): array
     {
-        if (isset($alreadyDumpedObjects['PyzAntelope'][$this->hashCode()])) {
+        if (isset($alreadyDumpedObjects['PyzAntelopeSearch'][$this->hashCode()])) {
             return ['*RECURSION*'];
         }
-        $alreadyDumpedObjects['PyzAntelope'][$this->hashCode()] = true;
-        $keys = PyzAntelopeTableMap::getFieldNames($keyType);
+        $alreadyDumpedObjects['PyzAntelopeSearch'][$this->hashCode()] = true;
+        $keys = PyzAntelopeSearchTableMap::getFieldNames($keyType);
         $result = [
-            $keys[0] => $this->getIdAntelope(),
-            $keys[1] => $this->getName(),
-            $keys[2] => $this->getColor(),
+            $keys[0] => $this->getIdAntelopeSearch(),
+            $keys[1] => $this->getFkAntelope(),
+            $keys[2] => $this->getData(),
+            $keys[3] => $this->getAliasKeys(),
+            $keys[4] => $this->getKey(),
+            $keys[5] => $this->getCreatedAt(),
+            $keys[6] => $this->getUpdatedAt(),
         ];
+        if ($result[$keys[5]] instanceof \DateTimeInterface) {
+            $result[$keys[5]] = $result[$keys[5]]->format('Y-m-d H:i:s.u');
+        }
+
+        if ($result[$keys[6]] instanceof \DateTimeInterface) {
+            $result[$keys[6]] = $result[$keys[6]]->format('Y-m-d H:i:s.u');
+        }
+
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
             $result[$key] = $virtualColumn;
@@ -920,7 +1177,7 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function setByName(string $name, $value, string $type = TableMap::TYPE_FIELDNAME)
     {
-        $pos = PyzAntelopeTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = PyzAntelopeSearchTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
 
         $this->setByPosition($pos, $value);
 
@@ -939,13 +1196,25 @@ abstract class PyzAntelope implements ActiveRecordInterface
     {
         switch ($pos) {
             case 0:
-                $this->setIdAntelope($value);
+                $this->setIdAntelopeSearch($value);
                 break;
             case 1:
-                $this->setName($value);
+                $this->setFkAntelope($value);
                 break;
             case 2:
-                $this->setColor($value);
+                $this->setData($value);
+                break;
+            case 3:
+                $this->setAliasKeys($value);
+                break;
+            case 4:
+                $this->setKey($value);
+                break;
+            case 5:
+                $this->setCreatedAt($value);
+                break;
+            case 6:
+                $this->setUpdatedAt($value);
                 break;
         } // switch()
 
@@ -971,16 +1240,28 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function fromArray(array $arr, string $keyType = TableMap::TYPE_FIELDNAME)
     {
-        $keys = PyzAntelopeTableMap::getFieldNames($keyType);
+        $keys = PyzAntelopeSearchTableMap::getFieldNames($keyType);
 
         if (array_key_exists($keys[0], $arr)) {
-            $this->setIdAntelope($arr[$keys[0]]);
+            $this->setIdAntelopeSearch($arr[$keys[0]]);
         }
         if (array_key_exists($keys[1], $arr)) {
-            $this->setName($arr[$keys[1]]);
+            $this->setFkAntelope($arr[$keys[1]]);
         }
         if (array_key_exists($keys[2], $arr)) {
-            $this->setColor($arr[$keys[2]]);
+            $this->setData($arr[$keys[2]]);
+        }
+        if (array_key_exists($keys[3], $arr)) {
+            $this->setAliasKeys($arr[$keys[3]]);
+        }
+        if (array_key_exists($keys[4], $arr)) {
+            $this->setKey($arr[$keys[4]]);
+        }
+        if (array_key_exists($keys[5], $arr)) {
+            $this->setCreatedAt($arr[$keys[5]]);
+        }
+        if (array_key_exists($keys[6], $arr)) {
+            $this->setUpdatedAt($arr[$keys[6]]);
         }
 
         return $this;
@@ -1023,16 +1304,28 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function buildCriteria(): Criteria
     {
-        $criteria = new Criteria(PyzAntelopeTableMap::DATABASE_NAME);
+        $criteria = new Criteria(PyzAntelopeSearchTableMap::DATABASE_NAME);
 
-        if ($this->isColumnModified(PyzAntelopeTableMap::COL_ID_ANTELOPE)) {
-            $criteria->add(PyzAntelopeTableMap::COL_ID_ANTELOPE, $this->id_antelope);
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_ID_ANTELOPE_SEARCH)) {
+            $criteria->add(PyzAntelopeSearchTableMap::COL_ID_ANTELOPE_SEARCH, $this->id_antelope_search);
         }
-        if ($this->isColumnModified(PyzAntelopeTableMap::COL_NAME)) {
-            $criteria->add(PyzAntelopeTableMap::COL_NAME, $this->name);
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_FK_ANTELOPE)) {
+            $criteria->add(PyzAntelopeSearchTableMap::COL_FK_ANTELOPE, $this->fk_antelope);
         }
-        if ($this->isColumnModified(PyzAntelopeTableMap::COL_COLOR)) {
-            $criteria->add(PyzAntelopeTableMap::COL_COLOR, $this->color);
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_DATA)) {
+            $criteria->add(PyzAntelopeSearchTableMap::COL_DATA, $this->data);
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_ALIAS_KEYS)) {
+            $criteria->add(PyzAntelopeSearchTableMap::COL_ALIAS_KEYS, $this->alias_keys);
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_KEY)) {
+            $criteria->add(PyzAntelopeSearchTableMap::COL_KEY, $this->key);
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_CREATED_AT)) {
+            $criteria->add(PyzAntelopeSearchTableMap::COL_CREATED_AT, $this->created_at);
+        }
+        if ($this->isColumnModified(PyzAntelopeSearchTableMap::COL_UPDATED_AT)) {
+            $criteria->add(PyzAntelopeSearchTableMap::COL_UPDATED_AT, $this->updated_at);
         }
 
         return $criteria;
@@ -1050,8 +1343,8 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function buildPkeyCriteria(): Criteria
     {
-        $criteria = ChildPyzAntelopeQuery::create();
-        $criteria->add(PyzAntelopeTableMap::COL_ID_ANTELOPE, $this->id_antelope);
+        $criteria = ChildPyzAntelopeSearchQuery::create();
+        $criteria->add(PyzAntelopeSearchTableMap::COL_ID_ANTELOPE_SEARCH, $this->id_antelope_search);
 
         return $criteria;
     }
@@ -1064,7 +1357,7 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function hashCode()
     {
-        $validPk = null !== $this->getIdAntelope();
+        $validPk = null !== $this->getIdAntelopeSearch();
 
         $validPrimaryKeyFKs = 0;
         $primaryKeyFKs = [];
@@ -1080,22 +1373,22 @@ abstract class PyzAntelope implements ActiveRecordInterface
 
     /**
      * Returns the primary key for this object (row).
-     * @return int
+     * @return string
      */
     public function getPrimaryKey()
     {
-        return $this->getIdAntelope();
+        return $this->getIdAntelopeSearch();
     }
 
     /**
-     * Generic method to set the primary key (id_antelope column).
+     * Generic method to set the primary key (id_antelope_search column).
      *
-     * @param int|null $key Primary key.
+     * @param string|null $key Primary key.
      * @return void
      */
-    public function setPrimaryKey(?int $key = null): void
+    public function setPrimaryKey(?string $key = null): void
     {
-        $this->setIdAntelope($key);
+        $this->setIdAntelopeSearch($key);
     }
 
     /**
@@ -1105,7 +1398,7 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function isPrimaryKeyNull(): bool
     {
-        return null === $this->getIdAntelope();
+        return null === $this->getIdAntelopeSearch();
     }
 
     /**
@@ -1114,7 +1407,7 @@ abstract class PyzAntelope implements ActiveRecordInterface
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param object $copyObj An object of \Orm\Zed\Antelope\Persistence\PyzAntelope (or compatible) type.
+     * @param object $copyObj An object of \Orm\Zed\AntelopeSearch\Persistence\PyzAntelopeSearch (or compatible) type.
      * @param bool $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
      * @param bool $makeNew Whether to reset autoincrement PKs and make the object new.
      * @throws \Propel\Runtime\Exception\PropelException
@@ -1122,11 +1415,15 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function copyInto(object $copyObj, bool $deepCopy = false, bool $makeNew = true): void
     {
-        $copyObj->setName($this->getName());
-        $copyObj->setColor($this->getColor());
+        $copyObj->setFkAntelope($this->getFkAntelope());
+        $copyObj->setData($this->getData());
+        $copyObj->setAliasKeys($this->getAliasKeys());
+        $copyObj->setKey($this->getKey());
+        $copyObj->setCreatedAt($this->getCreatedAt());
+        $copyObj->setUpdatedAt($this->getUpdatedAt());
         if ($makeNew) {
             $copyObj->setNew(true);
-            $copyObj->setIdAntelope(NULL); // this is a auto-increment column, so set to default value
+            $copyObj->setIdAntelopeSearch(NULL); // this is a auto-increment column, so set to default value
         }
     }
 
@@ -1139,7 +1436,7 @@ abstract class PyzAntelope implements ActiveRecordInterface
      * objects.
      *
      * @param bool $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
-     * @return \Orm\Zed\Antelope\Persistence\PyzAntelope Clone of current object.
+     * @return \Orm\Zed\AntelopeSearch\Persistence\PyzAntelopeSearch Clone of current object.
      * @throws \Propel\Runtime\Exception\PropelException
      */
     public function copy(bool $deepCopy = false)
@@ -1161,9 +1458,13 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function clear()
     {
-        $this->id_antelope = null;
-        $this->name = null;
-        $this->color = null;
+        $this->id_antelope_search = null;
+        $this->fk_antelope = null;
+        $this->data = null;
+        $this->alias_keys = null;
+        $this->key = null;
+        $this->created_at = null;
+        $this->updated_at = null;
         $this->alreadyInSave = false;
         $this->clearAllReferences();
         $this->resetModified();
@@ -1197,238 +1498,329 @@ abstract class PyzAntelope implements ActiveRecordInterface
      */
     public function __toString()
     {
-        return (string) $this->exportTo(PyzAntelopeTableMap::DEFAULT_STRING_FORMAT);
+        return (string) $this->exportTo(PyzAntelopeSearchTableMap::DEFAULT_STRING_FORMAT);
     }
 
-    // event behavior
+    // synchronization behavior
 
     /**
-     * @return void
+     * @deprecated Use {@link \Spryker\Zed\SynchronizationBehavior\SynchronizationBehaviorConfig::isSynchronizationEnabled()} instead.
+     *
+     * @return bool
      */
-    protected function prepareSaveEventName()
+    public function isSendingToQueue()
     {
-        if ($this->isNew()) {
-            $this->_eventName = 'Entity.pyz_antelope.create';
-        } else {
-            $this->_eventName = 'Entity.pyz_antelope.update';
+        return $this->_isSendingToQueue;
+    }
+
+    /**
+     * @deprecated Use {@link \Spryker\Zed\SynchronizationBehavior\SynchronizationBehaviorConfig::isSynchronizationEnabled()} instead.
+     *
+     * @param bool $_isSendingToQueue
+     *
+     * @return $this
+     */
+    public function setIsSendingToQueue($_isSendingToQueue)
+    {
+        $this->_isSendingToQueue = $_isSendingToQueue;
+
+        return $this;
+    }
+
+    /**
+     * @param string $resource
+     *
+     * @return \Spryker\Service\Synchronization\Dependency\Plugin\SynchronizationKeyGeneratorPluginInterface
+     */
+    protected function getStorageKeyBuilder($resource)
+    {
+        if ($this->_locator === null) {
+            $this->_locator = \Spryker\Zed\Kernel\Locator::getInstance();
         }
 
-        $this->_modifiedColumns = $this->getModifiedColumns();
-        $this->_isModified = $this->isModified();
-    }
+        /** @var \Spryker\Service\Synchronization\SynchronizationServiceInterface $synchronizationService */
+        $synchronizationService = $this->_locator->synchronization()->service();
 
-    /**
-     * @return void
-     */
-    public function disableEvent()
-    {
-        $this->_isEventDisabled = true;
-    }
-
-    /**
-     * @return void
-     */
-    public function enableEvent()
-    {
-        $this->_isEventDisabled = false;
-    }
-
-    /**
-     * @return void
-     */
-    protected function addSaveEventToMemory()
-    {
-        if ($this->_isEventDisabled) {
-            return;
-        }
-
-        if ($this->_eventName !== 'Entity.pyz_antelope.create') {
-            if (!$this->_isModified) {
-                return;
-            }
-
-            if (!$this->isEventColumnsModified()) {
-                return;
-            }
-        }
-
-        $data = [
-            'name' => 'pyz_antelope',
-            'id' => $this->getPrimaryKey(),
-            'event' => $this->_eventName,
-            'foreignKeys' => $this->getForeignKeys(),
-            'modifiedColumns' => $this->_modifiedColumns,
-            'originalValues' => $this->getOriginalValues(),
-            'additionalValues' => $this->getAdditionalValues(),
-        ];
-
-        $this->saveEventBehaviorEntityChange($data);
-
-        unset($this->_eventName);
-        unset($this->_modifiedColumns);
-        unset($this->_isModified);
+        return $synchronizationService->getStorageKeyBuilder($resource);
     }
 
     /**
      * @return void
      */
-    protected function addDeleteEventToMemory()
+    protected function setGeneratedKey()
     {
-        if ($this->_isEventDisabled) {
-            return;
-        }
+        $syncTransferData = new \Generated\Shared\Transfer\SynchronizationDataTransfer();
+        $syncTransferData->setReference($this->getFkAntelope());
 
-        $data = [
-            'name' => 'pyz_antelope',
-            'id' => $this->getPrimaryKey(),
-            'event' => 'Entity.pyz_antelope.delete',
-            'foreignKeys' => $this->getForeignKeys(),
-            'additionalValues' => $this->getAdditionalValues(),
-        ];
 
-        $this->saveEventBehaviorEntityChange($data);
+        $keyBuilder = $this->getStorageKeyBuilder('antelope');
+
+        $key = $keyBuilder->generateKey($syncTransferData);
+        $this->setKey($key);
     }
-
-    /**
-     * @return array
+            /**
+     * @return void
      */
-    protected function getForeignKeys()
+    protected function setGeneratedKeyForMappingResource()
     {
-        $foreignKeysWithValue = [];
-        foreach ($this->_foreignKeys as $key => $value) {
-            $foreignKeysWithValue[$key] = $this->getByName($value);
-        }
-
-        return $foreignKeysWithValue;
     }
-
     /**
-     * @param array $data
+     * @param string $source
+     * @param string $sourceIdentifier
+
+     * @return string
+     */
+    protected function generateMappingKey($source, $sourceIdentifier)
+    {
+        $syncTransferData = new \Generated\Shared\Transfer\SynchronizationDataTransfer();
+        $syncTransferData->setReference($source . ':' . $sourceIdentifier);
+
+
+        $keyBuilder = $this->getStorageKeyBuilder('antelope');
+
+        return $keyBuilder->generateKey($syncTransferData);
+    }
+            /**
+     * @return void
+     */
+    protected function setGeneratedAliasKeys()
+    {
+    }
+    /**
+     * @param array $message
      *
      * @return void
      */
-    protected function saveEventBehaviorEntityChange(array $data)
+    protected function sendToQueue(array $message)
     {
-        $encodedData = json_encode($data);
-        $dataLength = strlen($encodedData);
-
-        if ($dataLength > 256 * 1024) {
-            $warningMessage = sprintf(
-                '%s event message data size (%d KB) exceeds the allowable limit of %d KB. Please reduce the event message size or it might disrupt P&S process.',
-                ($data['event'] ?? ''),
-                $dataLength / 1024,
-                256,
-            );
-
-            $this->log($warningMessage, \Propel\Runtime\Propel::LOG_WARNING);
+        if ($this->_locator === null) {
+            $this->_locator = \Spryker\Zed\Kernel\Locator::getInstance();
         }
 
-        $isInstancePoolingDisabledSuccessfully = \Propel\Runtime\Propel::disableInstancePooling();
+        $queueSendTransfer = new \Generated\Shared\Transfer\QueueSendMessageTransfer();
+        $queueSendTransfer->setBody(json_encode($message));
 
-        $spyEventBehaviorEntityChange = new \Orm\Zed\EventBehavior\Persistence\SpyEventBehaviorEntityChange();
-        $spyEventBehaviorEntityChange->setData($encodedData);
-        $spyEventBehaviorEntityChange->setProcessId(\Spryker\Zed\Kernel\RequestIdentifier::getRequestId());
-        $spyEventBehaviorEntityChange->save();
 
-        if ($isInstancePoolingDisabledSuccessfully) {
-            \Propel\Runtime\Propel::enableInstancePooling();
+
+        $queueClient = $this->_locator->queue()->client();
+        $queueClient->sendMessage($this->getQueueName(), $queueSendTransfer);
+    }
+
+    /**
+     * @throws PropelException
+     *
+     * @return void
+     */
+    public function syncPublishedMessage()
+    {
+        if (!$this->isSynchronizationEnabled()) {
+            return;
         }
+
+        // Kept for BC reasons, will be removed in next major.
+        if (!$this->_isSendingToQueue) {
+            return;
+        }
+
+        if (empty($this->getKey())) {
+            throw new PropelException("Synchronization failed, the column 'key' is null or empty");
+        }
+
+        if ($this->_dataTemp !== null) {
+            $data = $this->_dataTemp;
+        } else {
+            $data = $this->getData();
+        }
+
+        /* The value for `$params` has been loaded from schema file */
+        $params = '';
+        $decodedParams = [];
+        if (!empty($params)) {
+            $decodedParams = json_decode($params, true);
+        }
+
+        $data['_timestamp'] = microtime(true);
+        $message = [
+            'write' => [
+                'key' => $this->getKey(),
+                'value' => $data,
+                'resource' => 'antelope',
+                'store' => '',
+                'params' => $decodedParams,
+            ]
+        ];
+        $this->sendMessage($message);
+    }
+
+    /**
+     * @return void
+     */
+    public function syncUnpublishedMessage()
+    {
+        if (!$this->isSynchronizationEnabled()) {
+            return;
+        }
+
+        // Kept for BC reasons, will be removed in next major.
+        if (!$this->_isSendingToQueue) {
+            return;
+        }
+
+        /* The value for `$params` has been loaded from schema file */
+        $params = '';
+        $decodedParams = [];
+        if (!empty($params)) {
+            $decodedParams = json_decode($params, true);
+        }
+
+        $data['_timestamp'] = microtime(true);
+        $message = [
+            'delete' => [
+                'key' => $this->getKey(),
+                'value' => $data,
+                'resource' => 'antelope',
+                'store' => '',
+                'params' => $decodedParams,
+            ]
+        ];
+
+        $this->sendMessage($message);
+    }
+
+    /**
+     * @return void
+     */
+    public function syncPublishedMessageForMappingResource()
+    {
+        if (!$this->isSynchronizationEnabled()) {
+            return;
+        }
+
+        ;
+    }
+
+    /**
+     * @return void
+     */
+    public function syncUnpublishedMessageForMappingResource()
+    {
+        if (!$this->isSynchronizationEnabled()) {
+            return;
+        }
+
+        ;
+    }
+
+    /**
+     * @return void
+     */
+    public function syncPublishedMessageForMappings()
+    {
+        if (!$this->isSynchronizationEnabled()) {
+            return;
+        }
+
+
+    }
+
+    /**
+     * @return void
+     */
+    public function syncUnpublishedMessageForMappings()
+    {
+        if (!$this->isSynchronizationEnabled()) {
+            return;
+        }
+
+
     }
 
     /**
      * @return bool
      */
-    protected function isEventColumnsModified()
+    public function isSynchronizationEnabled(): bool
     {
-        /* There is a wildcard(*) property for this event */
         return true;
     }
 
     /**
-     * @return array
+     * @return string
      */
-    protected function getOriginalValueColumnNames(): array
+    protected function getQueueName(): string
     {
-        return [
-
-        ];
+        return 'sync.search.antelope';
     }
 
     /**
-     * @return array
+     * @return bool
      */
-    protected function getOriginalValues(): array
+    protected function isDirectSyncEnabled(): bool
     {
-        if ($this->isNew()) {
-            return [];
-        }
-
-        $originalValues = [];
-        foreach ($this->_modifiedColumns as $modifiedColumn) {
-            if (!in_array($modifiedColumn, $this->getOriginalValueColumnNames())) {
-                continue;
-            }
-
-            $before = $this->_initialValues[$modifiedColumn];
-            $field = str_replace('pyz_antelope.', '', $modifiedColumn);
-            $after = $this->$field;
-
-            if ($before !== $after) {
-                $originalValues[$modifiedColumn] = $before;
-            }
-        }
-
-        return $originalValues;
+        return false;
     }
 
     /**
-     * @return array
-     */
-    protected function getAdditionalValueColumnNames(): array
-    {
-        return [
-
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    protected function getAdditionalValues(): array
-    {
-        $additionalValues = [];
-        foreach ($this->getAdditionalValueColumnNames() as $additionalValueColumnName) {
-            $field = str_replace('pyz_antelope.', '', $additionalValueColumnName);
-            $additionalValues[$additionalValueColumnName] = $this->$field;
-        }
-
-        return $additionalValues;
-    }
-
-    /**
-     * @param string $xmlValue
-     * @param string $column
+     * @param array $message
      *
-     * @return array|bool|\DateTime|float|int|object
+     * @return void
      */
-    protected function getPhpType($xmlValue, $column)
+    protected function sendToBuffer(array $message): void
     {
-        $columnType = PyzAntelopeTableMap::getTableMap()->getColumn($column)->getType();
-        if (in_array(strtoupper($columnType), ['INTEGER', 'TINYINT', 'SMALLINT'])) {
-            $xmlValue = (int) $xmlValue;
-        } else if (in_array(strtoupper($columnType), ['REAL', 'FLOAT', 'DOUBLE', 'BINARY', 'VARBINARY', 'LONGVARBINARY'])) {
-            $xmlValue = (double) $xmlValue;
-        } else if (strtoupper($columnType) === 'ARRAY') {
-            $xmlValue = (array) $xmlValue;
-        } else if (strtoupper($columnType) === 'BOOLEAN') {
-            $xmlValue = filter_var($xmlValue,  FILTER_VALIDATE_BOOLEAN);
-        } else if (strtoupper($columnType) === 'OBJECT') {
-            $xmlValue = (object) $xmlValue;
-        } else if (in_array(strtoupper($columnType), ['DATE', 'TIME', 'TIMESTAMP', 'BU_DATE', 'BU_TIMESTAMP'])) {
-            $xmlValue = \DateTime::createFromFormat('Y-m-d H:i:s', $xmlValue);
+        $queueSendTransfer = new \Generated\Shared\Transfer\QueueSendMessageTransfer();
+        $queueSendTransfer->setBody(json_encode($message));
+
+
+        $operationKey = array_key_first($message);
+        $synchronizationMessageTransfer = new \Generated\Shared\Transfer\SynchronizationMessageTransfer();
+        $synchronizationMessageTransfer->setData($message[$operationKey] ?? []);
+        $synchronizationMessageTransfer->setFallbackQueueMessage($queueSendTransfer);
+        $synchronizationMessageTransfer->setFallbackQueueName($this->getQueueName());
+        $synchronizationMessageTransfer->setSyncDestinationType('search');
+        $synchronizationMessageTransfer->setOperationType($operationKey);
+        $synchronizationMessageTransfer->setResource('antelope');
+
+
+        if ($this->_locator === null) {
+            $this->_locator = \Spryker\Zed\Kernel\Locator::getInstance();
         }
 
-        return $xmlValue;
+        $synchronizationFacade = $this->_locator->synchronization()->facade();
+        $synchronizationFacade->addSynchronizationMessageToBuffer($synchronizationMessageTransfer);
+    }
+
+    /**
+     * @param array $message
+     *
+     * @return void
+     */
+    protected function sendMessage(array $message): void
+    {
+        if ($this->_locator === null) {
+            $this->_locator = \Spryker\Zed\Kernel\Locator::getInstance();
+        }
+
+        $synchronizationFacade = $this->_locator->synchronization()->facade();
+        if ($this->isDirectSyncEnabled() && method_exists($synchronizationFacade, 'addSynchronizationMessageToBuffer')) {
+            $this->sendToBuffer($message);
+
+            return;
+        }
+
+        $this->sendToQueue($message);
+    }
+
+    // timestampable behavior
+
+    /**
+     * Mark the current object so that the update date doesn't get updated during next save
+     *
+     * @return $this The current object (for fluent API support)
+     */
+    public function keepUpdateDateUnchanged()
+    {
+        $this->modifiedColumns[PyzAntelopeSearchTableMap::COL_UPDATED_AT] = true;
+
+        return $this;
     }
 
     /**

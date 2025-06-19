@@ -190,6 +190,19 @@ class PyzAntelopeTableMap extends TableMap
     }
 
     /**
+     *
+     * Gets the list of behaviors registered for this table
+     *
+     * @return array<string, array> Associative array (name => parameters) of behaviors
+     */
+    public function getBehaviors(): array
+    {
+        return [
+            'event' => ['pyz_antelope_all' => ['column' => '*']],
+        ];
+    }
+
+    /**
      * Retrieves a string version of the primary key from the DB resultset row that can be used to uniquely identify a row in this table.
      *
      * For tables with a single-column primary key, that simple pkey value will be returned.  For tables with
