@@ -5,8 +5,9 @@ namespace Pyz\Zed\AntelopeDataImport\Business;
 use Generated\Shared\Transfer\DataImporterConfigurationTransfer;
 use Pyz\Zed\AntelopeDataImport\Business\DataImportStep\AntelopeWriterStep;
 use Spryker\Zed\DataImport\Business\DataImportBusinessFactory;
-
 use Spryker\Zed\DataImport\Business\Model\DataImporterInterface;
+use Spryker\Zed\DataImport\Business\Model\DataImportStep\DataImportStepInterface;
+
 class AntelopeDataImportBusinessFactory extends DataImportBusinessFactory
 {
     /**
@@ -27,9 +28,9 @@ class AntelopeDataImportBusinessFactory extends DataImportBusinessFactory
     }
 
     /**
-     * @return \Pyz\Zed\AntelopeDataImport\Business\DataImportStep\AntelopeWriterStep
+     * @return \Spryker\Zed\DataImport\Business\Model\DataImportStep\DataImportStepInterface
      */
-    public function createAntelopeWriterStep(): AntelopeWriterStep
+    public function createAntelopeWriterStep(): DataImportStepInterface
     {
         return new AntelopeWriterStep();
     }
