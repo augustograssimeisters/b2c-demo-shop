@@ -25,4 +25,10 @@ class AntelopeLocationDataImportBusinessFactory extends DataImportBusinessFactor
     {
         return new AntelopeLocationWriterStep();
     }
+    public function getPublisherFacade()
+    {
+        return $this->getProvidedDependency(
+            \Pyz\Zed\AntelopeLocationDataImport\AntelopeLocationDataImportDependencyProvider::FACADE_PUBLISHER
+        );
+    }
 }

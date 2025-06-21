@@ -17,4 +17,10 @@ class AntelopeLocationDataImportFacade extends AbstractFacade implements Antelop
             ->createAntelopeLocationDataImport($dataImporterConfigurationTransfer)
             ->import($dataImporterConfigurationTransfer);
     }
+    public function publish(array $ids): void
+    {
+        $this->getFactory()
+            ->getPublisherFacade()
+            ->publish($ids);
+    }
 }
