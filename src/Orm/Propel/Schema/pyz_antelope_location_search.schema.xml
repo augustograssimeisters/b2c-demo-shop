@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+    <database
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://static.spryker.com/schema-01.xsd"
+        name="zed"
+        defaultIdMethod="native"
+        namespace="Orm\Zed\AntelopeLocationSearch\Persistence"
+        package="src.Orm.Zed.AntelopeLocationSearch.Persistence"
+    >
+
+    <table name="pyz_antelope_location_search">
+        <column name="id_antelope_location_search" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+        <column name="fk_antelope_location" type="INTEGER" required="true"/>
+        <column name="name" type="VARCHAR" size="255" required="true"/>
+        <column name="location" type="VARCHAR" size="255"/>
+        <column name="created_at" type="TIMESTAMP" required="true"/>
+    </table>
+</database>

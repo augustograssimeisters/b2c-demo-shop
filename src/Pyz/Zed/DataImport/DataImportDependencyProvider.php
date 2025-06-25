@@ -310,7 +310,6 @@ class DataImportDependencyProvider extends SprykerDataImportDependencyProvider
             new AntelopeLocationDataImportPlugin(),
             new ContentNavigationDataImportPlugin(),
             new CategoryStoreDataImportPlugin(),
-            new AntelopeDataImportPlugin(),
         ];
     }
 

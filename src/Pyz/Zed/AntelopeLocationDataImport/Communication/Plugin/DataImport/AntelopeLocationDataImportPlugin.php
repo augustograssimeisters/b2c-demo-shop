@@ -3,7 +3,6 @@
 namespace Pyz\Zed\AntelopeLocationDataImport\Communication\Plugin\DataImport;
 
 use Generated\Shared\Transfer\DataImporterConfigurationTransfer;
-use Generated\Shared\Transfer\DataImporterReportTransfer;
 use Pyz\Zed\AntelopeLocationDataImport\AntelopeLocationDataImportConfig;
 use Spryker\Zed\DataImport\Dependency\Plugin\DataImportPluginInterface;
 use Spryker\Zed\Kernel\Communication\AbstractPlugin;
@@ -13,7 +12,7 @@ use Spryker\Zed\Kernel\Communication\AbstractPlugin;
  */
 class AntelopeLocationDataImportPlugin extends AbstractPlugin implements DataImportPluginInterface
 {
-    public function import(?DataImporterConfigurationTransfer $dataImporterConfigurationTransfer = null): DataImporterReportTransfer
+    public function import(?DataImporterConfigurationTransfer $dataImporterConfigurationTransfer = null)
     {
         return $this->getFacade()->importAntelopeLocation($dataImporterConfigurationTransfer);
     }

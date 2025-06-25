@@ -3,7 +3,6 @@
 namespace Pyz\Zed\AntelopeLocationDataImport\Business;
 
 use Generated\Shared\Transfer\DataImporterConfigurationTransfer;
-use Generated\Shared\Transfer\DataImporterReportTransfer;
 use Spryker\Zed\Kernel\Business\AbstractFacade;
 
 /**
@@ -11,16 +10,14 @@ use Spryker\Zed\Kernel\Business\AbstractFacade;
  */
 class AntelopeLocationDataImportFacade extends AbstractFacade implements AntelopeLocationDataImportFacadeInterface
 {
-    public function importAntelopeLocation(?DataImporterConfigurationTransfer $dataImporterConfigurationTransfer = null): DataImporterReportTransfer
+    /**
+     * @param \Generated\Shared\Transfer\DataImporterConfigurationTransfer|null $dataImporterConfigurationTransfer
+     * @return \Spryker\Zed\DataImport\Business\Model\DataImporterInterface
+     */
+    public function importAntelopeLocation(?DataImporterConfigurationTransfer $dataImporterConfigurationTransfer = null)
     {
         return $this->getFactory()
-            ->createAntelopeLocationDataImport($dataImporterConfigurationTransfer)
+            ->createAntelopeLocationDataImporter()
             ->import($dataImporterConfigurationTransfer);
-    }
-    public function publish(array $ids): void
-    {
-        $this->getFactory()
-            ->getPublisherFacade()
-            ->publish($ids);
     }
 }

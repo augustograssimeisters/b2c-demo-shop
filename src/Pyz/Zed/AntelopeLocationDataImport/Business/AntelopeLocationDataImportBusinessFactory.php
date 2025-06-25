@@ -3,32 +3,55 @@
 namespace Pyz\Zed\AntelopeLocationDataImport\Business;
 
 use Generated\Shared\Transfer\DataImporterConfigurationTransfer;
-use Pyz\Zed\AntelopeLocationDataImport\Business\DataImportStep\AntelopeLocationWriterStep;
-use Spryker\Zed\DataImport\Business\DataImportBusinessFactory;
+use Pyz\Zed\AntelopeLocationDataImport\AntelopeLocationDataImportConfig;
+use Pyz\Zed\AntelopeLocationDataImport\Business\Model\AntelopeLocationWriterStep;
+use Spryker\Zed\DataImport\Business\Model\DataImporter;
 use Spryker\Zed\DataImport\Business\Model\DataImporterInterface;
+use Spryker\Zed\DataImport\Business\Model\DataSet\StepBrokerInterface;
+use Spryker\Zed\DataImport\Business\Model\DataSet\StepBroker;
+use Spryker\Zed\DataImport\Business\Model\Csv\CsvReaderConfiguration;
+use Spryker\Zed\DataImport\Business\Model\Csv\CsvDataImporter;
+use Spryker\Zed\Kernel\Business\AbstractBusinessFactory;
 
-class AntelopeLocationDataImportBusinessFactory extends DataImportBusinessFactory
+class AntelopeLocationDataImportBusinessFactory extends AbstractBusinessFactory
 {
-    public function createAntelopeLocationDataImport(?DataImporterConfigurationTransfer $dataImporterConfigurationTransfer = null): DataImporterInterface
+    /**
+     * @return \Spryker\Zed\DataImport\Business\Model\DataImporterInterface
+     */
+    public function createAntelopeLocationDataImporter(): DataImporterInterface
     {
-        $dataImporter = $this->getCsvDataImporterFromConfig($dataImporterConfigurationTransfer);
+        $dataImporter = new CsvDataImporter(
+            AntelopeLocationDataImportConfig::IMPORT_TYPE_ANTELOPE_LOCATION,
+            $this->getCsvReaderConfiguration()
+        );
 
         $dataSetStepBroker = $this->createTransactionAwareDataSetStepBroker();
-        $dataSetStepBroker->addStep($this->createAntelopeLocationWriterStep());
+        $dataSetStepBroker->addStep(new AntelopeLocationWriterStep());
 
         $dataImporter->addDataSetStepBroker($dataSetStepBroker);
 
         return $dataImporter;
     }
 
-    public function createAntelopeLocationWriterStep(): AntelopeLocationWriterStep
+    /**
+     * @return \Spryker\Zed\DataImport\Business\Model\DataSet\StepBrokerInterface
+     */
+    protected function createTransactionAwareDataSetStepBroker(): StepBrokerInterface
     {
-        return new AntelopeLocationWriterStep();
+        return new StepBroker();
     }
-    public function getPublisherFacade()
+
+    /**
+     * @return \Spryker\Zed\DataImport\Business\Model\Csv\CsvReaderConfiguration
+     */
+    protected function getCsvReaderConfiguration(): CsvReaderConfiguration
     {
-        return $this->getProvidedDependency(
-            \Pyz\Zed\AntelopeLocationDataImport\AntelopeLocationDataImportDependencyProvider::FACADE_PUBLISHER
+        $readerConfiguration = new CsvReaderConfiguration();
+        $readerConfiguration->setFileName(
+            $this->getConfig()->getAntelopeLocationImportFilePath()
         );
+        $readerConfiguration->setDelimiter(',');
+
+        return $readerConfiguration;
     }
 }
