@@ -55,6 +55,7 @@ use Spryker\Zed\StockDataImport\Communication\Plugin\StockDataImportPlugin;
 use Spryker\Zed\StockDataImport\Communication\Plugin\StockStoreDataImportPlugin;
 use Spryker\Zed\StoreContextDataImport\Communication\Plugin\DataImport\StoreContextDataImportPlugin;
 use Spryker\Zed\StoreDataImport\Communication\Plugin\DataImport\StoreDataImportPlugin;
+use Pyz\Zed\AntelopeDataImport\Communication\Plugin\DataImport\AntelopeDataImportPlugin;
 
 class DataImportDependencyProvider extends SprykerDataImportDependencyProvider
 {
@@ -301,6 +302,10 @@ class DataImportDependencyProvider extends SprykerDataImportDependencyProvider
             new StockAddressDataImportPlugin(),
             new CategoryStoreDataImportPlugin(),
             new ProductConfigurationDataImportPlugin(),
+            new CmsSlotBlockDataImportPlugin(),
+            new ContentNavigationDataImportPlugin(),
+            new CategoryStoreDataImportPlugin(),
+            new AntelopeDataImportPlugin(),
         ];
     }
 
